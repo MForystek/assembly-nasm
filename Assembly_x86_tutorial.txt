@@ -1,0 +1,109 @@
+-----------------------------------------------------------
+BASICS (32bit architecture!!!)
+-----------------------------------------------------------
+Installation and compilation:
+nasm -f elf32 ex1.asm -o ex1.o	- from assembly to object
+ld -m elf_i386 ex1.o -o ex1	- from object to executable
+
+-----------------------------------------------------------
+General:
+    global _start   ; first line of every program
+
+    section .text   ; section for our code
+    section .data   ; section for data and variables
+    section .bss    ; section for uninitialized variables    
+
+    _start:         ; label, place where program starts to execute
+    something:      ; custom label
+
+-----------------------------------------------------------
+Registers:
+    eax - general purpose
+    ebx - general purpose
+    ecx - general purpose
+    edx - general purpose
+    esp - stack pointer
+
+-----------------------------------------------------------
+Instructions:
+
+Moving:
+    mov A, B    ; A = B
+    mov [<var_name>], byte 'b'      ; write 'b' to memory pointed by <var_name>
+    mov [<var_name>+2], byte 'h'    ; write 'h' to memory pointed by <var_name>+2
+
+Arithmetic:
+    add A, B    ; A += B
+    sub A, B    ; A -= B
+    mul A       ; eax *= A,     affects edx !!!
+    div A       ; eax /= A,     affects edx !!!
+    inc A       ; A += 1 (increment)    more efficient than add
+    dec A       ; A -= 1 (decrement)    more efficient than sub
+
+System:
+    int 0x80    ; system interrupt, 0x80 tells to perform system call
+
+Jumping:
+    jmp name    ; unconditional jump of EIP to the label name
+                ; EIP - pointer to the place in machine code which processor will be executing next
+
+    cmp A, B    ; Compare A to B and store result somewhere in the memory
+
+    je label    ; Jump if A equal to B
+    jne label   ; Jump if A not equal to B
+    jg label    ; Jump if A greater than B
+    jge label   ; Jump if A greater than or equal to B
+    jl label    ; Jump if A less than B
+    jle label   ; Jump if A less than or equal to B
+
+Stack operations:
+    push 2345   ; push 2345 to next position in stack
+    push 2345 == sub esp, 1             ; RANDOM ACCESS TO STACK
+                 mov [esp], dword 2345  ; write 4 bytes to memory pointed by esp
+                                        ; dword - 4bytes integer to move
+    pop eax     ; pop value of esp to eax register
+    pop eax == mov eax, dword [esp]
+               add esp, 1
+-----------------------------------------------------------
+System calls:
+    System call number is stored in register eax
+    1 - sys_exit
+    3 - sys_read
+    4 - sys_write
+
+    sys_exit:
+        Register ebx stores the exit status code
+
+    sys_read:
+	Register ebx stores input destination
+	    ebx = 2 - stdin file desctiptor
+	Register ecx stores pointer to place to write to
+	Register edx stores number of bytes to read
+
+    sys_write:
+        Register ebx stores write destination
+            ebx = 1 - stdout file descriptor
+        Register ecx stores pointer to text to write
+        Register edx stores number of bytes to write
+
+-----------------------------------------------------------
+In section .data:
+    Defining number:
+        <var_name> db 100   - 1 byte dec number         dd - 1 byte
+        <var_name> dw 0x1ff - 2 bytes hex number        dw - 2 bytes
+        <var_name> dd 10000 - 4 bytes dec number        dd - 4 bytes
+
+    Defining string:
+        <var_name> db "Our string", 0x0a    ; 0x0a = 10 = \n
+                                            ; <var_name> - pointer to first character of string
+    Defining automatic length of string:
+        <var_name> equ $ - <string_name>    ; $ - <var> subtract end-start (memory)
+
+-----------------------------------------------------------
+Stack:
+    memory on stack is 4 bytes apart e.g. 00, 04, 08 etc. (32bytes architecture)
+    esp - pointer to stack starts at value 28
+    esp starts on the highest stack memory address
+    push    moves esp down
+    pop     moves esp up
+    
